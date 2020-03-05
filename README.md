@@ -1,2 +1,2 @@
-# multi-obj-recommendation-system
-a recommendation-system for multi-objective learning
+# multi-obj-recommender-system
+a recommender-system for multi-objective learning
