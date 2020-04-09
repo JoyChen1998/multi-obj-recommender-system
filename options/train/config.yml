@@ -1,0 +1,18 @@
+#### general settings
+name: PROJECT_BASIC_CONFIG
+
+#### login OJ accounts
+oj_username: '201658501147'
+oj_passwd : '123456'
+
+#### urls
+oj_login_url: 'http://202.194.119.110/login.php'
+oj_contest_down_url: 'http://202.194.119.110/contestrank.xls.php?cid='
+oj_contest_down2_url: 'http://202.194.119.110/contestrank2.xls.php?cid='
+
+#### datasets
+datasets:
+  train:
+    data_root: 'data/contest_csv/'
+    generate_csv_root: 'data/'
+

@@ -1,11 +1,9 @@
 import argparse
 import sys
 import utils.DataScrawler as ds
-username = ''
-passwd = ''
+import utils.DataProcesser as dpr
 
-dataSource = ds.DataScrawler(username, passwd)
-dataSource.login()
-dataSource.getcontest(1600, 1605)
-
-
+if __name__ == '__main__':
+    a = dpr.DataProcesser()
+    a.preprocess_contest(1500, 2504)
+    a.generate_csv()
