@@ -1,7 +1,7 @@
-import numpy as np
 import pandas as pd
 import csv
 import operator
+import utils.util as utl
 import yaml
 
 basic_config_path = 'options/train/config.yml'  # use basic config
@@ -19,9 +19,10 @@ class DataProcesser:
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
         self.dir_path = data['datasets']['train']['data_root']
-        self.generate_path = data['datasets']['train']['generate_csv_root']
+        self.file = data['datasets']['train']['generate_csv_root'] + data['datasets']['train']['generate_file_name']
         self.dictlist = []
         self.cmp = operator.itemgetter('user')  # add sort attr
+
 
     def preprocess_contest(self, start_id, end_id):
         """
@@ -31,7 +32,9 @@ class DataProcesser:
         :param start_id: preprocess start id,
         :param end_id: preprocess end id,
         """
+        self.pbar = utl.ProgressBar()
         for num in range(start_id, end_id):
+            self.pbar.update()
             file_path = self.dir_path + str(num) + '.csv'
             try:
                 d = pd.read_csv(file_path)
@@ -95,13 +98,21 @@ class DataProcesser:
         generate a csv & clustering contest info.
         """
         dictlist = self.dictlist
-        new_csv_file = self.generate_path + 'generate.csv'
+        new_csv_file = self.file
+        self.pbar = utl.ProgressBar(task_num=len(dictlist))
         with open(new_csv_file, 'w') as f:
             w = csv.DictWriter(f, dictlist[0].keys())
             w.writeheader()
             for i in range(len(dictlist)):
+                self.pbar.update()
                 w.writerow(dictlist[i])
         f.close()
 
-
-
+    def merge_2dfNgenerate_train_data(self, df1, df2):
+        df = pd.merge(df1, df2)
+        print(df)
+        columns = ['id', 'user', 'nickname', 'Solved',
+                   'contestSolved', 'Submit', 'AC', 'WA', 'TLE',
+                   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+        df.to_csv('train.csv', index=False, columns=columns)
+        print('generate train.csv successfully!')

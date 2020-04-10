@@ -212,7 +212,7 @@ class ProgressBar(object):
             sys.stdout.write('[{}] 0/{}, elapsed: 0s, ETA:\n{}\n'.format(
                 ' ' * self.bar_width, self.task_num, 'Start...'))
         else:
-            sys.stdout.write('completed: 0, elapsed: 0s')
+            sys.stdout.write('completed: 0, elapsed: 0s\n')
         sys.stdout.flush()
         self.start_time = time.time()
 
@@ -230,6 +230,6 @@ class ProgressBar(object):
             sys.stdout.write('[{}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s\n{}\n'.format(
                 bar_chars, self.completed, self.task_num, fps, int(elapsed + 0.5), eta, msg))
         else:
-            sys.stdout.write('completed: {}, elapsed: {}s, {:.1f} tasks/s'.format(
+            sys.stdout.write('completed: {}, elapsed: {}s, {:.1f} tasks/s\n'.format(
                 self.completed, int(elapsed + 0.5), fps))
         sys.stdout.flush()
