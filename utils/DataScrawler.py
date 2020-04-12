@@ -4,9 +4,8 @@ import yaml
 import time
 import requests as r
 from bs4 import BeautifulSoup as bs
-import utils.DataProcesser as dtp
 import utils.util as utl
-
+import csv
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -43,17 +42,19 @@ def pwdmd5(str):
 
 class DataScrawler:
     def __init__(self):
+        # load config
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
         self.login_url = data['oj_login_url']
         self.down_contest_url1 = data['oj_contest_down_url']
         self.down_contest_url2 = data['oj_contest_down2_url']
         self.user_info_url = data['oj_user_info_url']
-        self.csv_dir = data['datasets']['train']['data_root']
-        self.train_file = data['datasets']['train']['generate_csv_root'] + data['datasets']['train']['train_file_name']
-        self.file = data['datasets']['train']['generate_csv_root'] + data['datasets']['train']['generate_file_name']
+        self.csv_dir = data['datasets']['data_root']
+        self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
+        self.userinfo_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_userinfo_name']
         login_id = data['oj_username']
         passwd = data['oj_passwd']
+        # load end
         self.contest_start = 0
         self.contest_end = 0
         self.s = r.session()
@@ -70,7 +71,6 @@ class DataScrawler:
             "Accept-Charset": "GB2312,utf-8;q=0.7,*;q=0.7"
         }
 
-
     def login(self):
         try:
             self.s.post(self.login_url, data=self.login_data)
@@ -86,7 +86,7 @@ class DataScrawler:
         :param end_id: get contest end up this id
 
         """
-        print('totally need to finish', end_id-start_id, 'tasks.')
+        print('totally need to finish', end_id - start_id, 'tasks.')
         self.pbar = utl.ProgressBar()
         for i in range(start_id, end_id):
             self.pbar.update()
@@ -114,15 +114,32 @@ class DataScrawler:
                 print(i, '\t', title, ' saves successfully!')
 
     def get_train_data(self):
+        """
+
+        !!! important: this function must run after data processing -> generate.csv !!!
+        ----------------------------------------------------------------------------------
+        I have got a problem that I can't down all data at once. Because the server may bans my ip
+        (maybe I `get` the server too many times at a short time) , so I could lost the conn.
+        In order to keep these data, I have to save them into a file, and keep append data, again and again.
+
+        """
         global user_status
-        processor = dtp.DataProcesser()
-        l = []
         df = pd.DataFrame(pd.read_csv(self.file))
         self.pbar = utl.ProgressBar(task_num=len(df))
+        columns = ['user', 'Solved', 'Submit', 'AC', 'WA', 'TLE', 'OLE']
+
+        # create a file to save the user's info data.
+        with open(self.userinfo_file, 'w') as f:
+            dict_writer = csv.DictWriter(f, fieldnames=columns)
+            dict_writer.writeheader()
+        # create end
         for num in range(len(df)):
             self.pbar.update()
-            req = self.s.get(self.user_info_url + str(df['user'][num]), headers=self.headers)
-            time.sleep(1.5)
+            try:
+                req = self.s.get(self.user_info_url + str(df['user'][num]), headers=self.headers)
+            except Exception:
+                print('hulted by', Exception)
+            time.sleep(0.5)
             info = bs(req.content, 'lxml').find_all("td")
             so = su = ac = wa = tle = ole = None
             for i in range(len(info)):
@@ -147,7 +164,8 @@ class DataScrawler:
                 "TLE": check(tle),
                 "OLE": check(ole)
             }
-            l.append(user_status)
-        df2 = pd.DataFrame(l)
-        processor.merge_2dfNgenerate_train_data(df, df2)
 
+            # keep append data into the file
+            with open(self.userinfo_file, 'a') as f:
+                dict_writer = csv.DictWriter(f, fieldnames=columns)
+                dict_writer.writerow(user_status)

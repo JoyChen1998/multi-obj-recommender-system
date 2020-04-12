@@ -18,11 +18,12 @@ class DataProcesser:
     def __init__(self):
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
-        self.dir_path = data['datasets']['train']['data_root']
-        self.file = data['datasets']['train']['generate_csv_root'] + data['datasets']['train']['generate_file_name']
+        self.dir_path = data['datasets']['data_root']
+        self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
+        self.userinfo_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_userinfo_name']
+        self.train_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_file_name']
         self.dictlist = []
         self.cmp = operator.itemgetter('user')  # add sort attr
-
 
     def preprocess_contest(self, start_id, end_id):
         """
@@ -108,11 +109,16 @@ class DataProcesser:
                 w.writerow(dictlist[i])
         f.close()
 
-    def merge_2dfNgenerate_train_data(self, df1, df2):
+    def merge_2dfNgenerate_train_data(self):
+        """
+        merge genertate.csv & user_info.csv and generate `train.csv`
+        """
+        df1 = pd.DataFrame(pd.read_csv(self.file))
+        df2 = pd.DataFrame(pd.read_csv(self.userinfo_file))
         df = pd.merge(df1, df2)
         print(df)
         columns = ['id', 'user', 'nickname', 'Solved',
                    'contestSolved', 'Submit', 'AC', 'WA', 'TLE',
                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-        df.to_csv('train.csv', index=False, columns=columns)
+        df.to_csv(self.train_file, index=False, columns=columns)
         print('generate train.csv successfully!')

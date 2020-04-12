@@ -5,23 +5,27 @@ name: PROJECT_BASIC_CONFIG
 oj_username: '201658501147'
 oj_passwd : '123456'
 
+
 #### urls
 oj_login_url: 'http://202.194.119.110/login.php'
 oj_contest_down_url: 'http://202.194.119.110/contestrank.xls.php?cid='
 oj_contest_down2_url: 'http://202.194.119.110/contestrank2.xls.php?cid='
 oj_user_info_url: 'http://202.194.119.110/userinfo.php?user='
 
+
 #### datasets
 datasets:
+  data_root: 'data/contest_csv/'
+  generate_csv_root: 'data/generate_csv/'
+  generate_file_name: 'generate.csv'
+  generate_userinfo_name: 'user_info.csv'
   train:
-    data_root: 'data/contest_csv/'
-    generate_csv_root: 'data/'
-    generate_file_name: 'generate.csv'
     train_csv_root: 'data/'
     train_file_name: 'train.csv'
   test:
     test_csv_root: 'data/'
     test_file_root: 'test.csv'
+
 
 #### save plot image
 plot_save: true
