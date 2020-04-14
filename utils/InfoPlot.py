@@ -50,44 +50,41 @@ class InfoPlot:
         plt.scatter(classes, solved)
         plt.show()
 
-    def plot_hist(self):
+    def plot_grade(self, grade):
         data_df = self.df
-        # user = np.unique(data_df['user'].apply(str).apply(lambda x: x[:6]).tolist())
-        user14 = []
-        user15 = []
-        user16 = []
-        user17 = []
-        user18 = []
-        u14 = []
-        u15 = []
-        u16 = []
-        u17 = []
-        u18 = []
-        for i in range(len(data_df['user'])):
-            if str(data_df['user'][i])[:4] == '2014':
-                user14.append(data_df['Solved'][i])
-                u14.append(data_df['user'][i])
-            elif str(data_df['user'][i])[:4] == '2015':
-                user15.append(data_df['Solved'][i])
-                u15.append(data_df['user'][i])
-            elif str(data_df['user'][i])[:4] == '2016':
-                user16.append(data_df['Solved'][i])
-                u16.append(data_df['user'][i])
-            elif str(data_df['user'][i])[:4] == '2017':
-                user17.append(data_df['Solved'][i])
-                u17.append(data_df['user'][i])
-            elif str(data_df['user'][i])[:4] == '2018':
-                user18.append(data_df['Solved'][i])
-                u18.append(data_df['user'][i])
-
-        plt.figure(num=1, figsize=(16, 9))
-        plt.plot(u14, user14, label='14')
-        plt.figure(num=2)
-        plt.plot(u15, user15, label='15')
-        plt.figure(num=3)
-        plt.plot(u16, user16, label='16')
-        plt.figure(num=4)
-        plt.plot(u17, user17, label='17')
+        sets = np.unique(data_df['user'].apply(str).apply(lambda x: x[4:8]).tolist())
+        length = len(sets)
+        print(length, type(sets))
+        print('get grade', grade)
+        _ac = 0
+        _sub = 0
+        plt.figure(figsize=(30, 15))
+        for j in range(length):
+            user = []
+            solve = []
+            submit = []
+            ac = []
+            wa = []
+            for rows in data_df.values:
+                if str(rows[1])[:4] == grade and str(rows[1])[10:12] < '55' \
+                         and str(rows[1])[4:8] == str(sets[j]) \
+                        and str(rows[1])[4] != '0' and str(rows[1])[4] < '7':
+                    _ac += rows[6]
+                    _sub += rows[3]
+                    user.append(str(rows[1])[4:])
+                    solve.append(rows[3])
+                    submit.append(rows[5])
+                    ac.append(rows[6])
+                    wa.append(rows[7])
+                    print(str(rows[1])[4:8])
+                    plt.title(grade + '\'s figure')
+                    plt.plot(user, solve, label='solve')
+                    plt.plot(user, submit, label='submit')
+                    plt.plot(user, ac, label='ac')
+                    plt.plot(user, wa, label='wa')
+            # _ac_ratio = _ac / _sub
+        print('starting plot!')
+        plt.savefig(self.plot_path+'plot_grade-'+str(grade) + '.csv')
         plt.show()
 
     def plot_class_with_line(self, plot_class, length):
@@ -99,7 +96,7 @@ class InfoPlot:
 
         """
         data_df = self.df
-        plot_len = math.ceil(float(len(plot_class)/2))  # get subplot columns, and rows => 2
+        plot_len = math.ceil(float(len(plot_class) / 2))  # get subplot columns, and rows => 2
         plt.figure(figsize=(20, 10))
         for x in range(len(plot_class)):
             j = []
@@ -113,17 +110,56 @@ class InfoPlot:
                     continue
                 if str(data_df['user'][i])[:length] != plot_class[x]:
                     break
-                j.append(data_df['user'][i] - int(plot_class[x])*pow(10, 12-length))
+                j.append(data_df['user'][i] - int(plot_class[x]) * pow(10, 12 - length))
                 jscore.append(data_df['Solved'][i])
                 jac.append(data_df['AC'][i])
                 jsub.append(data_df['Submit'][i])
                 jconsolved.append(data_df['contestSolved'][i])
-            plt.subplot(plot_len, 2, x+1)
+            plt.subplot(plot_len, 2, x + 1)
             plt.xlim((0, 55))
-            plt.title(plot_class[x][length-2:length] + ' class\'s figure')
+            plt.title(plot_class[x][length - 2:length] + ' class\'s figure')
             plt.plot(j, jscore, label='score')
             plt.plot(j, jac, label='ac')
             plt.plot(j, jsub, label='sub')
             plt.plot(j, jconsolved, label='contest', marker='+')
-            plt.legend()
+            plt.legend(loc='best')
+        if self.plot_save:
+            plt.savefig(self.plot_path +'plot_class_with_line-'+ "class.jpg")
         plt.show()
+
+    def plot_stu_with_pie(self, stu):
+        """
+        plot stu's ability and which kind of problems they can solved
+        :param stu: stu to plot, [list]
+        """
+        data_df = self.df
+        length = len(stu)
+        labels_pie = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+        labels_hist = ['Solved', 'contestSolved', 'Submit', 'AC', 'WA', 'TLE']
+        plt.figure(figsize=(10, 5*len(stu)))
+        index= 1
+        for x in range(len(stu)):
+            for row in data_df.values:
+                if str(row[1]) == stu[x]:
+                    stu_info = row[3:9]
+                    pie_info = row[9:]
+                    print(stu_info, '\n', pie_info)
+                    plt.subplot(len(stu), 2, index)
+                    plt.title(str(stu[x])[-4:] + '\'s ability')
+                    bar_df = pd.DataFrame({"x-axis": labels_hist, "y-axis":stu_info})
+                    sns.barplot("x-axis", "y-axis", palette="RdBu_r", data=bar_df)
+                    index += 1
+                    plt.subplot(len(stu), 2, index)
+                    plt.title(str(stu[x])[-4:] + '\'s problems')
+                    print(len(pie_info), len(labels_pie))
+                    plt.pie(x=pie_info, labels=labels_pie)
+                    index += 1
+                else:
+                    continue
+        if self.plot_save:
+            plt.savefig(self.plot_path +'plot_stu-'+ "students.jpg")
+        plt.show()
+
+
+
+
