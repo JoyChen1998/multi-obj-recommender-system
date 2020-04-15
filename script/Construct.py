@@ -9,14 +9,20 @@ class Construct:
     def __init__(self):
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
+        #######################
+        # loading config
+        #######################
         self.dir_path = data['datasets']['data_root']
         self.genrtate_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
         self.userinfo_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_userinfo_name']
         self.train_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_file_name']
         self.train_f_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_f_file_name']
+        self.problem_file = data['datasets']['root'] + data['datasets']['problemset_name']
+        self.problem_r_file = data['datasets']['root'] + data['datasets']['problemset_ratio_name']
         self._train_df = pd.DataFrame(pd.read_csv(self.train_file))
         self._gen_df = pd.DataFrame(pd.read_csv(self.genrtate_file))
         self._usr_df = pd.DataFrame(pd.read_csv(self.userinfo_file))
+        self._p_df = pd.DataFrame(pd.read_csv(self.problem_file))
 
     def construct_factors(self):
         """
@@ -50,7 +56,7 @@ class Construct:
                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
         try:
             train_df.to_csv(self.train_f_file, index=False, columns=columns)  # save calc factors
-            print('generate ', self.train_f_file, ' successfully!')
+            print('generate', self.train_f_file, 'successfully!')
         except Exception:
             print('failed to factor -> csv ', Exception)
 
@@ -70,8 +76,28 @@ class Construct:
             elif rows[3] >= 110:
                 q4.append(rows[1])
 
+    def construct_problem_ratio(self):
+        """
+        calc the problems' ratio, add to its origin csv.
+        """
+        p_df = self._p_df
+        acr = []
+        for rows in p_df.values:
+            ac=rows[3]
+            sub=rows[4]
+            if ac and sub:
+                _ac = round(float(ac) / float(sub), 3)
+            else:
+                _ac = 0
+            acr.append(_ac)
 
-
+        p_df['ac_ratio'] = acr
+        columns= ['num', 'id', 'name', 'ac', 'submit', 'ac_ratio']
+        try:
+            p_df.to_csv(self.problem_r_file, index=False, columns=columns)  # save ac ratio
+            print('generate',  self.problem_r_file, 'successfully!')
+        except Exception:
+            print('failed to ac ratio -> csv', Exception)
 
 
 

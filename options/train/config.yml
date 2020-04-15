@@ -15,10 +15,13 @@ oj_user_info_url: 'http://202.194.119.110/userinfo.php?user='
 
 #### datasets
 datasets:
+  root: 'data/'
   data_root: 'data/contest_csv/'
   generate_csv_root: 'data/generate_csv/'
   generate_file_name: 'generate.csv'
   generate_userinfo_name: 'user_info.csv'
+  problemset_name: 'problem.csv'
+  problemset_ratio_name: 'problem_r.csv'
   train:
     train_csv_root: 'data/'
     train_file_name: 'train.csv'
