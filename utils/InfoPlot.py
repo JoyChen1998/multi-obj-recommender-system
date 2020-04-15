@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import yaml
 import seaborn as sns
 
+
 basic_config_path = 'options/train/config.yml'  # use basic config
 
 
@@ -13,9 +14,11 @@ class InfoPlot:
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
         self.file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_file_name']
+        self.f_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_f_file_name']
         self.plot_save = data['plot_save']
         self.plot_path = data['plot_save_path']
         self.df = pd.DataFrame(pd.read_csv(self.file))
+        self.f_df = pd.DataFrame(pd.read_csv(self.f_file))
         sns.set_style('whitegrid')
         plt.style.use('seaborn-white')
 
@@ -51,6 +54,10 @@ class InfoPlot:
         plt.show()
 
     def plot_grade(self, grade):
+        """
+        plot a grade's students' `solved`,`submit`, `ac`,`wa`, and calc the ac ratio
+        :param grade: the number of grade that need to be ploted. [str]
+        """
         data_df = self.df
         sets = np.unique(data_df['user'].apply(str).apply(lambda x: x[4:8]).tolist())
         length = len(sets)
@@ -58,6 +65,7 @@ class InfoPlot:
         print('get grade', grade)
         _ac = 0
         _sub = 0
+        st = set()
         plt.figure(figsize=(30, 15))
         for j in range(length):
             user = []
@@ -72,19 +80,20 @@ class InfoPlot:
                     _ac += rows[6]
                     _sub += rows[3]
                     user.append(str(rows[1])[4:])
+                    st.add(str(rows[1])[4:8])
                     solve.append(rows[3])
                     submit.append(rows[5])
                     ac.append(rows[6])
                     wa.append(rows[7])
-                    print(str(rows[1])[4:8])
                     plt.title(grade + '\'s figure')
-                    plt.plot(user, solve, label='solve')
+                    plt.plot(user, solve, label='solve', marker='+')
                     plt.plot(user, submit, label='submit')
                     plt.plot(user, ac, label='ac')
                     plt.plot(user, wa, label='wa')
             # _ac_ratio = _ac / _sub
         print('starting plot!')
-        plt.savefig(self.plot_path+'plot_grade-'+str(grade) + '.csv')
+        # plt.xticks(list(st))
+        plt.savefig(self.plot_path+'plot_grade-'+str(grade) + '.jpg')
         plt.show()
 
     def plot_class_with_line(self, plot_class, length):
@@ -160,6 +169,30 @@ class InfoPlot:
             plt.savefig(self.plot_path +'plot_stu-'+ "students.jpg")
         plt.show()
 
+    def plot_trainSet_factors_scatters(self, grade):
+        """
+        plot the `grade` distribution map of `factor` & `solved problems`
+
+        :param grade:the number of grade [int]
+        """
+        data_df = self.f_df
+        solved = []
+        factor = []
+        user = []
+        new_df = pd.DataFrame(columns=['user', 'solved', 'factor'])
+        for rows in data_df.values:
+            if str(rows[1])[2:4] == str(grade) and '700' > str(rows[1])[4:7] > '100':
+                user.append(int(str(rows[1])[4:9]))
+                print(int(str(rows[1])[4:7]), rows[3], rows[4])
+                factor.append(rows[3])
+                solved.append(rows[4])
+
+        new_df['user'] = user
+        new_df['solved'] = solved
+        new_df['factor'] = factor
+        sns.lmplot(x='solved', y='factor', data=new_df, hue='user', height=12, fit_reg=False)
+        plt.savefig(self.plot_path+'scatter'+str(grade)+'.jpg')
+        plt.show()
 
 
 
