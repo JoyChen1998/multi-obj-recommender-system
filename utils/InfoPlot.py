@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import yaml
 import seaborn as sns
 
-
 basic_config_path = 'options/train/config.yml'  # use basic config
 
 
@@ -13,6 +12,9 @@ class InfoPlot:
     def __init__(self):
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
+        #######################
+        # loading config
+        #######################
         self.file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_file_name']
         self.f_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_f_file_name']
         self.plot_save = data['plot_save']
@@ -75,7 +77,7 @@ class InfoPlot:
             wa = []
             for rows in data_df.values:
                 if str(rows[1])[:4] == grade and str(rows[1])[10:12] < '55' \
-                         and str(rows[1])[4:8] == str(sets[j]) \
+                        and str(rows[1])[4:8] == str(sets[j]) \
                         and str(rows[1])[4] != '0' and str(rows[1])[4] < '7':
                     _ac += rows[6]
                     _sub += rows[3]
@@ -90,10 +92,11 @@ class InfoPlot:
                     plt.plot(user, submit, label='submit')
                     plt.plot(user, ac, label='ac')
                     plt.plot(user, wa, label='wa')
+                    plt.xticks(fontsize=20)
+                    plt.yticks(fontsize=20)
             # _ac_ratio = _ac / _sub
         print('starting plot!')
-        # plt.xticks(list(st))
-        plt.savefig(self.plot_path+'plot_grade-'+str(grade) + '.jpg')
+        plt.savefig(self.plot_path + 'plot_grade-' + str(grade) + '.jpg')
         plt.show()
 
     def plot_class_with_line(self, plot_class, length):
@@ -126,14 +129,16 @@ class InfoPlot:
                 jconsolved.append(data_df['contestSolved'][i])
             plt.subplot(plot_len, 2, x + 1)
             plt.xlim((0, 55))
-            plt.title(plot_class[x][length - 2:length] + ' class\'s figure')
+            plt.title(plot_class[x][length - 2:length] + ' class\'s figure', fontsize=20)
             plt.plot(j, jscore, label='score')
             plt.plot(j, jac, label='ac')
-            plt.plot(j, jsub, label='sub')
+            plt.plot(j, jsub, label='submit')
             plt.plot(j, jconsolved, label='contest', marker='+')
+            plt.xticks(fontsize=20)
+            plt.yticks(fontsize=20)
             plt.legend(loc='best')
         if self.plot_save:
-            plt.savefig(self.plot_path +'plot_class_with_line-'+ "class.jpg")
+            plt.savefig(self.plot_path + 'plot_class_with_line-' + "class.jpg")
         plt.show()
 
     def plot_stu_with_pie(self, stu):
@@ -142,11 +147,10 @@ class InfoPlot:
         :param stu: stu to plot, [list]
         """
         data_df = self.df
-        length = len(stu)
         labels_pie = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
         labels_hist = ['Solved', 'contestSolved', 'Submit', 'AC', 'WA', 'TLE']
-        plt.figure(figsize=(10, 5*len(stu)))
-        index= 1
+        plt.figure(figsize=(10, 5 * len(stu)))
+        index = 1
         for x in range(len(stu)):
             for row in data_df.values:
                 if str(row[1]) == stu[x]:
@@ -155,18 +159,20 @@ class InfoPlot:
                     print(stu_info, '\n', pie_info)
                     plt.subplot(len(stu), 2, index)
                     plt.title(str(stu[x])[-4:] + '\'s ability')
-                    bar_df = pd.DataFrame({"x-axis": labels_hist, "y-axis":stu_info})
+                    bar_df = pd.DataFrame({"x-axis": labels_hist, "y-axis": stu_info})
                     sns.barplot("x-axis", "y-axis", palette="RdBu_r", data=bar_df)
                     index += 1
                     plt.subplot(len(stu), 2, index)
                     plt.title(str(stu[x])[-4:] + '\'s problems')
+                    plt.xticks(fontsize=20)
+                    plt.yticks(fontsize=20)
                     print(len(pie_info), len(labels_pie))
                     plt.pie(x=pie_info, labels=labels_pie)
                     index += 1
                 else:
                     continue
         if self.plot_save:
-            plt.savefig(self.plot_path +'plot_stu-'+ "students.jpg")
+            plt.savefig(self.plot_path + 'plot_stu-' + "students.jpg")
         plt.show()
 
     def plot_trainSet_factors_scatters(self, grade):
@@ -179,20 +185,24 @@ class InfoPlot:
         solved = []
         factor = []
         user = []
+        jksolved = []
+        jkfactor = []
         new_df = pd.DataFrame(columns=['user', 'solved', 'factor'])
         for rows in data_df.values:
             if str(rows[1])[2:4] == str(grade) and '700' > str(rows[1])[4:7] > '100':
+                if str(rows[1])[4:8] == '5850':
+                    jkfactor.append(rows[3])
+                    jksolved.append(rows[4])
                 user.append(int(str(rows[1])[4:9]))
-                print(int(str(rows[1])[4:7]), rows[3], rows[4])
                 factor.append(rows[3])
                 solved.append(rows[4])
-
         new_df['user'] = user
         new_df['solved'] = solved
         new_df['factor'] = factor
         sns.lmplot(x='solved', y='factor', data=new_df, hue='user', height=12, fit_reg=False)
-        plt.savefig(self.plot_path+'scatter'+str(grade)+'.jpg')
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.xlabel('Solved', fontsize=20)
+        plt.ylabel('Factor', fontsize=20)
+        plt.savefig(self.plot_path + 'scatter' + str(grade) + '.jpg')
         plt.show()
-
-
-
