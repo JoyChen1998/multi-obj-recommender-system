@@ -26,6 +26,7 @@ datasets:
     train_csv_root: 'data/'
     train_file_name: 'train.csv'
     train_f_file_name: 'train_factor.csv'
+    train_p_file_name: 'train_prefer_class.csv'
   test:
     test_csv_root: 'data/'
     test_file_root: 'test.csv'

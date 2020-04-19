@@ -1,8 +1,9 @@
-import numpy as np
 import math
+import yaml
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import yaml
+import utils.util as utl
 import seaborn as sns
 
 basic_config_path = 'options/train/config.yml'  # use basic config
@@ -69,7 +70,9 @@ class InfoPlot:
         _sub = 0
         st = set()
         plt.figure(figsize=(30, 15))
+        pbar = utl.ProgressBar(task_num=length)
         for j in range(length):
+            pbar.update()
             user = []
             solve = []
             submit = []
@@ -139,6 +142,7 @@ class InfoPlot:
             plt.legend(loc='best')
         if self.plot_save:
             plt.savefig(self.plot_path + 'plot_class_with_line-' + "class.jpg")
+        print('ok')
         plt.show()
 
     def plot_stu_with_pie(self, stu):
@@ -151,12 +155,13 @@ class InfoPlot:
         labels_hist = ['Solved', 'contestSolved', 'Submit', 'AC', 'WA', 'TLE']
         plt.figure(figsize=(10, 5 * len(stu)))
         index = 1
+        pbar = utl.ProgressBar(task_num=len(stu))
         for x in range(len(stu)):
+            pbar.update()
             for row in data_df.values:
                 if str(row[1]) == stu[x]:
                     stu_info = row[3:9]
                     pie_info = row[9:]
-                    print(stu_info, '\n', pie_info)
                     plt.subplot(len(stu), 2, index)
                     plt.title(str(stu[x])[-4:] + '\'s ability')
                     bar_df = pd.DataFrame({"x-axis": labels_hist, "y-axis": stu_info})
@@ -166,13 +171,13 @@ class InfoPlot:
                     plt.title(str(stu[x])[-4:] + '\'s problems')
                     plt.xticks(fontsize=20)
                     plt.yticks(fontsize=20)
-                    print(len(pie_info), len(labels_pie))
                     plt.pie(x=pie_info, labels=labels_pie)
                     index += 1
                 else:
                     continue
         if self.plot_save:
             plt.savefig(self.plot_path + 'plot_stu-' + "students.jpg")
+        print('ok')
         plt.show()
 
     def plot_trainSet_factors_scatters(self, grade):
@@ -185,24 +190,48 @@ class InfoPlot:
         solved = []
         factor = []
         user = []
-        jksolved = []
-        jkfactor = []
         new_df = pd.DataFrame(columns=['user', 'solved', 'factor'])
-        for rows in data_df.values:
-            if str(rows[1])[2:4] == str(grade) and '700' > str(rows[1])[4:7] > '100':
-                if str(rows[1])[4:8] == '5850':
-                    jkfactor.append(rows[3])
-                    jksolved.append(rows[4])
-                user.append(int(str(rows[1])[4:9]))
-                factor.append(rows[3])
-                solved.append(rows[4])
+        pbar = utl.ProgressBar(task_num=len(data_df))
+        for i in range(len(data_df)):
+            pbar.update()
+            if str(data_df['user'][i])[:4] == grade and '7000' > str(data_df['user'][i])[4:8] > '1000':
+                user.append(int(str(data_df['user'][i])[4:9]))
+                solved.append(data_df['solved'][i])
+                factor.append(data_df['factor'][i])
         new_df['user'] = user
         new_df['solved'] = solved
         new_df['factor'] = factor
-        sns.lmplot(x='solved', y='factor', data=new_df, hue='user', height=12, fit_reg=False)
+        sns.lmplot(x='solved', y='factor', data=new_df, hue='user', height=15, fit_reg=False)
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
         plt.xlabel('Solved', fontsize=20)
         plt.ylabel('Factor', fontsize=20)
         plt.savefig(self.plot_path + 'scatter' + str(grade) + '.jpg')
+        print('ok')
         plt.show()
+
+    def plot_train_lst2problem_scatters(self, grade):
+        """
+        plot a grade's last 2 problems solution status.
+        :param grade: [str]
+        """
+        data_df = self.f_df
+        user = []
+        lastone = []
+        lasttwo = []
+        new_df = pd.DataFrame(columns=['user', 'lastOne', 'lastTwo'])
+        for i in range(len(data_df)):
+            if str(data_df['user'][i])[:4] == grade and '7000'> str(data_df['user'][i])[4:8] > '1000':
+                user.append(int(str(data_df['user'][i])[4:9]))
+                lastone.append(data_df['J'][i])
+                lasttwo.append(data_df['I'][i])
+        new_df['user'] = user
+        new_df['lastOne'] = lastone
+        new_df['lastTwo'] = lasttwo
+        sns.lmplot(x='lastOne', y='lastTwo', data=new_df, hue='user', height=15, fit_reg=False)
+        plt.xlabel('lastOne')
+        plt.ylabel('lastTwo')
+        plt.show()
+
+
+

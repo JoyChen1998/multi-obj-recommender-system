@@ -18,6 +18,9 @@ class DataProcesser:
     def __init__(self):
         with open(basic_config_path, 'r', encoding='utf-8') as f:
             data = yaml.load(f.read())
+        #######################
+        # loading config
+        #######################
         self.dir_path = data['datasets']['data_root']
         self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
         self.userinfo_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_userinfo_name']
@@ -73,7 +76,6 @@ class DataProcesser:
         self.dictlist.sort(key=self.cmp)  # sort by username
         for i in range(len(self.dictlist)):
             self.dictlist[i]['id'] = i + 1
-
 
     def update_csv(self, row, index):
         """

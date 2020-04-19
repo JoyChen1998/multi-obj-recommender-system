@@ -4,7 +4,6 @@ import yaml
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
-
 class Construct:
     def __init__(self):
         with open(basic_config_path, 'r', encoding='utf-8') as f:
@@ -39,6 +38,8 @@ class Construct:
         classes = np.unique(train_df['user'].apply(str).apply(lambda x: x[:10]).tolist())
         multiple_factors = [0.68, 0.7, 0.8, 0.9, 1.0, 1.1, 1.5, 2.5, 3.5]
         # difficulty factors in user, to judge user's ability
+
+        # generate 3 attribute for training data
         user_p = []
         for rows in train_df.values:
             user_param = 0
@@ -48,9 +49,9 @@ class Construct:
                 user_param *= (rows[6]/rows[5])
             else:
                 user_param = 0
-            user_param = round(user_param, 3)
             user_p.append(user_param)
-        train_df['factor'] = user_p  # add factor to estimate user's ability
+        # add factor to estimate user's ability
+        train_df['factor'] = user_p
         columns = ['id', 'user', 'nickname', 'factor', 'Solved',
                    'contestSolved', 'Submit', 'AC', 'WA', 'TLE',
                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
@@ -60,28 +61,13 @@ class Construct:
         except Exception:
             print('failed to factor -> csv ', Exception)
 
-        q1 = []
-        q2 = []
-        q3 = []
-        q4 = []
-
-        for rows in train_df.values:
-            print(rows[0], rows[1], rows[2], rows[3])
-            if 0 < rows[3] < 50:
-                q1.append(rows[1])
-            elif 50 <= rows[3] < 80:
-                q2.append(rows[1])
-            elif 80 <= rows[3] < 110:
-                q3.append(rows[1])
-            elif rows[3] >= 110:
-                q4.append(rows[1])
-
     def construct_problem_ratio(self):
         """
         calc the problems' ratio, add to its origin csv.
         """
         p_df = self._p_df
         acr = []
+        lv = []
         for rows in p_df.values:
             ac=rows[3]
             sub=rows[4]
@@ -90,14 +76,37 @@ class Construct:
             else:
                 _ac = 0
             acr.append(_ac)
-
+            lv.append(getLevel_p(_ac, sub))
         p_df['ac_ratio'] = acr
-        columns= ['num', 'id', 'name', 'ac', 'submit', 'ac_ratio']
+        p_df['level'] = lv
+        columns= ['num', 'id', 'name', 'level', 'ac', 'submit', 'ac_ratio']
         try:
             p_df.to_csv(self.problem_r_file, index=False, columns=columns)  # save ac ratio
             print('generate',  self.problem_r_file, 'successfully!')
         except Exception:
             print('failed to ac ratio -> csv', Exception)
+
+
+def getLevel_p(e, s):
+    l = 1  ## init
+    if 0 < e <= 0.2 and s < 500:
+        l = 8
+    elif 0 < e <= 0.2 and s > 500:
+        l = 7
+    elif 0.2 < e <= 0.4 and s < 500:
+        l = 6
+    elif 0.2 < e <= 0.4 and s > 500:
+        l = 5
+    elif 0.4 < e <= 0.7 and s < 500:
+        l = 4
+    elif 0.4 < e <= 0.7 and s > 500:
+        l = 3
+    elif 0.7 < e and s < 500:
+        l = 2
+    elif 0.7 < e and s > 500:
+        l = 1
+    return l
+
 
 
 
