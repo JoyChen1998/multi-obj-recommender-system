@@ -23,7 +23,7 @@ class calcModel:
         self.train_prefer_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_p_file_name']
         self.problem_file = data['datasets']['root'] + data['datasets']['problemset_name']
         self.problem_r_file = data['datasets']['root'] + data['datasets']['problemset_ratio_name']
-        self._train_df = pd.DataFrame(pd.read_csv(self.train_file))
+        self._train_f_df = pd.DataFrame(pd.read_csv(self.train_f_file))
         self._gen_df = pd.DataFrame(pd.read_csv(self.genrtate_file))
         self._usr_df = pd.DataFrame(pd.read_csv(self.userinfo_file))
         self._p_df = pd.DataFrame(pd.read_csv(self.problem_file))
@@ -36,7 +36,7 @@ class calcModel:
         """
         estimator = KMeans(n_clusters=8)
         # cluster for 5 classes. ensure user's level.
-        data_df = self._train_df
+        data_df = self._train_f_df
         user = []
         lastone = []
         lasttwo = []
@@ -84,6 +84,7 @@ class calcModel:
         plt.yticks(fontsize=10)
         plt.xlabel('last2prob', fontsize=12)
         plt.ylabel('last1prob', fontsize=12)
+        plt.savefig('k-means-status.jpg')
         plt.show()
         ####### plot test end
 
@@ -107,15 +108,18 @@ class calcModel:
             data_df.loc[data_df['user'] == i[0], ['prefer_class']] = 6
         for i in x7.values:
             data_df.loc[data_df['user'] == i[0], ['prefer_class']] = 7
-
         self._prefer_df = data_df
 
     def saveTo_csv(self):
-        columns = ['id', 'user', 'nickname', 'Solved', 'prefer_class',
+        columns = ['id', 'user', 'nickname', 'Solved', 'factor', 'prefer_class',
                    'contestSolved', 'Submit', 'AC', 'WA', 'TLE',
                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
         self._prefer_df.to_csv(self.train_prefer_file, index=False, columns=columns)
         print('generate train_prefer_class.csv successfully!')
+
+
+
+
 
 
 

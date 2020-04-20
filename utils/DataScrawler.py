@@ -48,6 +48,7 @@ class DataScrawler:
         self.login_url = data['oj_login_url']
         self.down_contest_url1 = data['oj_contest_down_url']
         self.down_contest_url2 = data['oj_contest_down2_url']
+        self.latestAC_url = data['oj_user_latestAC_url']
         self.user_info_url = data['oj_user_info_url']
         self.csv_dir = data['datasets']['data_root']
         self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
@@ -87,9 +88,9 @@ class DataScrawler:
 
         """
         print('totally need to finish', end_id - start_id, 'tasks.')
-        self.pbar = utl.ProgressBar()
+        pbar = utl.ProgressBar(task_num=(end_id-start_id))
         for i in range(start_id, end_id):
-            self.pbar.update()
+            pbar.update()
             time.sleep(1)
             try:
                 self.req = self.s.get(self.down_contest_url1 + str(i)).content
@@ -125,7 +126,7 @@ class DataScrawler:
         """
         global user_status
         df = pd.DataFrame(pd.read_csv(self.file))
-        self.pbar = utl.ProgressBar(task_num=len(df))
+        pbar = utl.ProgressBar(task_num=len(df))
         columns = ['user', 'Solved', 'Submit', 'AC', 'WA', 'TLE', 'OLE']
 
         # create a file to save the user's info data.
@@ -134,11 +135,11 @@ class DataScrawler:
             dict_writer.writeheader()
         # create end
         for num in range(len(df)):
-            self.pbar.update()
+            pbar.update()
             try:
                 req = self.s.get(self.user_info_url + str(df['user'][num]), headers=self.headers)
             except Exception:
-                print('hulted by', Exception)
+                print('get user info halted.. ', Exception)
             time.sleep(0.5)
             info = bs(req.content, 'lxml').find_all("td")
             so = su = ac = wa = tle = ole = None
@@ -169,3 +170,25 @@ class DataScrawler:
             with open(self.userinfo_file, 'a') as f:
                 dict_writer = csv.DictWriter(f, fieldnames=columns)
                 dict_writer.writerow(user_status)
+
+    def getUserLatestACProblems(self, ulist):
+        """
+        get a ac problems list by users' list `have same prefer class` .
+        :param ulist: user's list
+        :return: user's ac problems list , [int]
+        """
+        ac_p = []
+        for i in range(len(ulist)):
+            try:
+                req = self.s.get(self.latestAC_url + str(ulist[i]), headers=self.headers)
+                t = bs(req.content, 'lxml')
+                tbody = t.find('table').find('tbody').find_all('tr')
+                for i in tbody:
+                    p = i.find_all('td')[2]
+                    ac_p.append(int(p))
+            except Exception:
+                print('get', str(ulist[i]), 'ac problems halted.. ', Exception)
+        return ac_p
+
+
+
