@@ -21,6 +21,11 @@ class render:
         self._p_r_df = pd.DataFrame(pd.read_csv(self.problem_r_file))
 
     def getUser(self, uid):
+        """
+        get a user info from csv file for recommendation.
+        :param uid: user id
+        :return: user info
+        """
         data_df = self._train_f_df
         user = {
             'uid': None,
@@ -40,6 +45,11 @@ class render:
         return user
 
     def getProblemByFactor(self, factor):
+        """
+        return the factor equals problems to recommender-system
+        :param factor: user's factor
+        :return: problem list
+        """
         problem_df = self._p_r_df
         if 0 < factor < 40:
             p_recom =1
@@ -57,7 +67,14 @@ class render:
 
     @staticmethod
     def getProblemRandom(plist, getnum):
-            return rand.sample(plist, getnum)
+        """
+        return a recommend problem list with random sequence.
+        :param plist: total number of problems we have.
+        :param getnum: number of problems
+        :return: random recommend problems
+        """
+        return rand.sample(plist, getnum)
+
 
 
 

@@ -175,9 +175,9 @@ class DataScrawler:
         """
         get a ac problems list by users' list `have same prefer class` .
         :param ulist: user's list
-        :return: user's ac problems list , [int]
+        :return: user's ac problems list(set) , [int]
         """
-        ac_p = []
+        ac_p = set()
         for i in range(len(ulist)):
             try:
                 req = self.s.get(self.latestAC_url + str(ulist[i]), headers=self.headers)
@@ -185,10 +185,10 @@ class DataScrawler:
                 tbody = t.find('table').find('tbody').find_all('tr')
                 for i in tbody:
                     p = i.find_all('td')[2]
-                    ac_p.append(int(p))
+                    ac_p.add(int(p))
             except Exception:
                 print('get', str(ulist[i]), 'ac problems halted.. ', Exception)
-        return ac_p
+        return list(ac_p)
 
 
 
