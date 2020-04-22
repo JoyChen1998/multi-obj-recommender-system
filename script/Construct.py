@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import yaml
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -19,9 +20,22 @@ class Construct:
         self.problem_file = data['datasets']['root'] + data['datasets']['problemset_name']
         self.problem_r_file = data['datasets']['root'] + data['datasets']['problemset_ratio_name']
         self._train_df = pd.DataFrame(pd.read_csv(self.train_file))
+        self._train_f_df = pd.DataFrame(pd.read_csv(self._train_f_df))
         self._gen_df = pd.DataFrame(pd.read_csv(self.genrtate_file))
         self._usr_df = pd.DataFrame(pd.read_csv(self.userinfo_file))
         self._p_df = pd.DataFrame(pd.read_csv(self.problem_file))
+        self._p_r_df = pd.DataFrame(pd.read_csv(self._p_r_df))
+        ## set logger
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def construct_factors(self):
         """
@@ -29,6 +43,7 @@ class Construct:
         include `problem solved` & `AC ratio`
 
         """
+        print('Construct -- construct_factors')
         train_df = self._train_df  # include all data from gen_df & user_df
         gen_df = self._gen_df  # include contest_solved & A to J problems solutions.
         usr_df = self._usr_df  # include Solved, Submit, AC, WA, TLE etc. info.
@@ -65,6 +80,7 @@ class Construct:
         """
         calc the problems' ratio, add to its origin csv.
         """
+        print('Construct -- construct_problem_ratio')
         p_df = self._p_df
         acr = []
         lv = []
@@ -86,9 +102,8 @@ class Construct:
         except Exception:
             print('failed to ac ratio -> csv', Exception)
 
-
 def getLevel_p(e, s):
-    l = 1  ## init
+    l = 1  ## init problem level
     if 0 < e <= 0.2 and s < 500:
         l = 8
     elif 0 < e <= 0.2 and s > 500:

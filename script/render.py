@@ -1,9 +1,9 @@
 import random as rand
 import yaml
-import numpy as np
 import pandas as pd
 import utils.util as utl
-import requests as r
+import os
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -19,8 +19,21 @@ class render:
         self.problem_r_file = data['datasets']['root'] + data['datasets']['problemset_ratio_name']
         self._train_f_df = pd.DataFrame(pd.read_csv(self.train_f_file))
         self._p_r_df = pd.DataFrame(pd.read_csv(self.problem_r_file))
+        self.contest_root = data['datasets']['data_root']
+        ## set logger
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def getUser(self, uid):
+        print('render -- getuser =>', str(uid))
         """
         get a user info from csv file for recommendation.
         :param uid: user id
@@ -45,6 +58,7 @@ class render:
         return user
 
     def getProblemByFactor(self, factor):
+        print('render -- getProblemByFactor =>', str(factor))
         """
         return the factor equals problems to recommender-system
         :param factor: user's factor
@@ -67,6 +81,7 @@ class render:
 
     @staticmethod
     def getProblemRandom(plist, getnum):
+        print('render -- getProblemRandom')
         """
         return a recommend problem list with random sequence.
         :param plist: total number of problems we have.
@@ -75,7 +90,15 @@ class render:
         """
         return rand.sample(plist, getnum)
 
-
+    def getOriginContestId(self):
+        maxfilename = 0
+        for root, dirs, files in os.walk(self.contest_root):
+            # print(root) #当前目录路径
+            # print(dirs) #当前路径下所有子目录
+            for i in range(len(files)):
+                if files[i] != '.DS_Store':  # in macOS special file
+                    maxfilename = max(int(files[i].rstrip('.csv')), maxfilename)
+        return maxfilename
 
 
 

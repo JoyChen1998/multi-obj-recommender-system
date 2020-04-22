@@ -11,6 +11,7 @@ oj_contest_down_url: 'http://202.194.119.110/contestrank.xls.php?cid='
 oj_contest_down2_url: 'http://202.194.119.110/contestrank2.xls.php?cid='
 oj_user_info_url: 'http://202.194.119.110/userinfo.php?user='
 oj_user_latestAC_url: 'http://202.194.119.110/status.php?jresult=4&user_id='
+oj_contest_url: 'http://202.194.119.110/contest.php'
 
 #### datasets
 datasets:
@@ -34,3 +35,10 @@ datasets:
 plot_save: true
 plot_save_path: 'data/plot_img/'
 
+#### others cfg
+recommend_problem: 10
+log_path: 'log/'
+log_name: 'run.log'
+
+db_user: 'root'
+db_pass: 'null'

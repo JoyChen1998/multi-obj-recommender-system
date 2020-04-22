@@ -3,6 +3,7 @@ import csv
 import operator
 import utils.util as utl
 import yaml
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -27,6 +28,17 @@ class DataProcesser:
         self.train_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_file_name']
         self.dictlist = []
         self.cmp = operator.itemgetter('user')  # add sort attr
+        # add logger
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def preprocess_contest(self, start_id, end_id):
         """
@@ -36,6 +48,7 @@ class DataProcesser:
         :param start_id: preprocess start id,
         :param end_id: preprocess end id,
         """
+        print('DataProcesser -- preprocess_contest')
         self.pbar = utl.ProgressBar()
         for num in range(start_id, end_id):
             self.pbar.update()
@@ -78,6 +91,7 @@ class DataProcesser:
             self.dictlist[i]['id'] = i + 1
 
     def update_csv(self, row, index):
+        print('DataProcesser -- update csv')
         """
         update csv info, sum which problem user has `solved` in contest
 
@@ -97,17 +111,18 @@ class DataProcesser:
         self.dictlist[index]["J"] += float(getNum(row, 14))
 
     def generate_csv(self):
+        print('DataProcesser -- generate csv')
         """
         generate a csv & clustering contest info.
         """
         dictlist = self.dictlist
         new_csv_file = self.file
-        self.pbar = utl.ProgressBar(task_num=len(dictlist))
-        with open(new_csv_file, 'w') as f:
+        pbar = utl.ProgressBar(task_num=len(dictlist))
+        with open(new_csv_file, 'a') as f:               ## change mode w -> a ,modified by 4/23/2020 on run
             w = csv.DictWriter(f, dictlist[0].keys())
             w.writeheader()
             for i in range(len(dictlist)):
-                self.pbar.update()
+                pbar.update()
                 w.writerow(dictlist[i])
         f.close()
 
@@ -115,6 +130,7 @@ class DataProcesser:
         """
         merge genertate.csv & user_info.csv and generate `train.csv`
         """
+        print('DataProcesser -- merge_2dfNgenerate_train_data')
         df1 = pd.DataFrame(pd.read_csv(self.file))
         df2 = pd.DataFrame(pd.read_csv(self.userinfo_file))
         df = pd.merge(df1, df2)

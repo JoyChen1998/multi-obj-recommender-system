@@ -1,13 +1,10 @@
 import yaml
-import numpy as np
 import pandas as pd
-import utils.util as utl
 import script.render as render
-import script.Construct as cons
-
-
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
+
 
 class Model:
     def __init__(self):
@@ -30,9 +27,20 @@ class Model:
         self._gen_df = pd.DataFrame(pd.read_csv(self.genrtate_file))
         self._usr_df = pd.DataFrame(pd.read_csv(self.userinfo_file))
         self._p_df = pd.DataFrame(pd.read_csv(self.problem_file))
+        ## set logger
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
 
-    def getUid(self, uid):
+    def getUsersParamsNProblems(self, uid):
         user = {
             'uid': uid,
             'nickname': None,
@@ -51,4 +59,7 @@ class Model:
         problem = r.getProblemByFactor(factor=user['factor'])
         ## set user's recommend problems
         user['get_recommend'] = r.getProblemRandom(problem, self.problem_num)
+        return user
+
+
 

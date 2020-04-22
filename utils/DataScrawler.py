@@ -6,6 +6,7 @@ import requests as r
 from bs4 import BeautifulSoup as bs
 import utils.util as utl
 import csv
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -49,6 +50,7 @@ class DataScrawler:
         self.down_contest_url1 = data['oj_contest_down_url']
         self.down_contest_url2 = data['oj_contest_down2_url']
         self.latestAC_url = data['oj_user_latestAC_url']
+        self.contest_url = data['oj_contest_url']
         self.user_info_url = data['oj_user_info_url']
         self.csv_dir = data['datasets']['data_root']
         self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
@@ -71,6 +73,16 @@ class DataScrawler:
             "Connection": "keep-alive",
             "Accept-Charset": "GB2312,utf-8;q=0.7,*;q=0.7"
         }
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def login(self):
         try:
@@ -190,5 +202,12 @@ class DataScrawler:
                 print('get', str(ulist[i]), 'ac problems halted.. ', Exception)
         return list(ac_p)
 
-
-
+    def getLatestContestId(self):
+        """
+        find the Online Judge contest latest contest id.
+        :return: the latest contest id [int]
+        """
+        req = self.s.get(self.contest_url, headers=self.headers)
+        content = bs(req.content, 'lxml')
+        id = content.find('table').find('tbody').find('tr').find('td')
+        return int(id.text.strip())

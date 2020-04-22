@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import utils.util as utl
 import seaborn as sns
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -24,6 +25,17 @@ class InfoPlot:
         self.f_df = pd.DataFrame(pd.read_csv(self.f_file))
         sns.set_style('whitegrid')
         plt.style.use('seaborn-white')
+        ## set logger
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def plot_scatter(self):
 
@@ -183,7 +195,6 @@ class InfoPlot:
     def plot_trainSet_factors_scatters(self, grade):
         """
         plot the `grade` distribution map of `factor` & `solved problems`
-
         :param grade:the number of grade [int]
         """
         data_df = self.f_df
@@ -221,7 +232,7 @@ class InfoPlot:
         lasttwo = []
         new_df = pd.DataFrame(columns=['user', 'lastOne', 'lastTwo'])
         for i in range(len(data_df)):
-            if str(data_df['user'][i])[:4] == grade and '7000'> str(data_df['user'][i])[4:8] > '1000':
+            if str(data_df['user'][i])[:4] == grade and '7000' > str(data_df['user'][i])[4:8] > '1000':
                 user.append(int(str(data_df['user'][i])[4:9]))
                 lastone.append(data_df['J'][i])
                 lasttwo.append(data_df['I'][i])
@@ -231,6 +242,7 @@ class InfoPlot:
         sns.lmplot(x='lastOne', y='lastTwo', data=new_df, hue='user', height=15, fit_reg=False)
         plt.xlabel('lastOne')
         plt.ylabel('lastTwo')
+        plt.savefig(self.plot_path + 'lst2problem' + grade + '.jpg')
         plt.show()
 
 
