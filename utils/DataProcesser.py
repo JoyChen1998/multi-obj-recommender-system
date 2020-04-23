@@ -24,6 +24,7 @@ class DataProcesser:
         #######################
         self.dir_path = data['datasets']['data_root']
         self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
+        self.tmp_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_tmp_file_name']
         self.userinfo_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_userinfo_name']
         self.train_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_file_name']
         self.dictlist = []
@@ -91,7 +92,6 @@ class DataProcesser:
             self.dictlist[i]['id'] = i + 1
 
     def update_csv(self, row, index):
-        print('DataProcesser -- update csv')
         """
         update csv info, sum which problem user has `solved` in contest
 
@@ -110,21 +110,28 @@ class DataProcesser:
         self.dictlist[index]["I"] += float(getNum(row, 13))
         self.dictlist[index]["J"] += float(getNum(row, 14))
 
-    def generate_csv(self):
+    def generate_tmp_csv(self):
         print('DataProcesser -- generate csv')
         """
-        generate a csv & clustering contest info.
+        generate a tmp generate.csv & clustering contest info.
+        then I need to combine 2 generate.csv
         """
         dictlist = self.dictlist
-        new_csv_file = self.file
+        new_csv_file = self.tmp_file
         pbar = utl.ProgressBar(task_num=len(dictlist))
-        with open(new_csv_file, 'a') as f:               ## change mode w -> a ,modified by 4/23/2020 on run
+        with open(new_csv_file, 'w') as f:
             w = csv.DictWriter(f, dictlist[0].keys())
             w.writeheader()
             for i in range(len(dictlist)):
                 pbar.update()
                 w.writerow(dictlist[i])
         f.close()
+
+    def combine2generate_csv(self):
+        columns = ['id','user','nickname','contestSolved','A','B','C','D','E','F','G','H','I','J']
+        generate_tmp_csv = pd.DataFrame(pd.read_csv(self.tmp_file))
+        generate_tmp_csv.to_csv(self.file, mode='a', index=False, columns=columns, header=False)
+        print('combine 2 generate.csv successfully!')
 
     def merge_2dfNgenerate_train_data(self):
         """
@@ -138,5 +145,5 @@ class DataProcesser:
         columns = ['id', 'user', 'nickname', 'Solved',
                    'contestSolved', 'Submit', 'AC', 'WA', 'TLE',
                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
-        df.to_csv(self.train_file, index=False, columns=columns)
+        df.to_csv(self.train_file, mode='w', index=False, columns=columns)
         print('generate train.csv successfully!')
