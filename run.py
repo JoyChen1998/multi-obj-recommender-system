@@ -87,31 +87,17 @@ def updateInfo():
     calcmm.kmeans_clustering_user(['2014', '2015', '2016', '2017', '2018', '2019'])
 
 
-def makeRecommendation():
+def getRecent_problems():
+    """
+    get all student recent solved problems record.
+    !! need to save the data, necessary!  Also,due to the OJ server always bans my IP . !!
+    """
     ########################################
-    ## get all problems to recommendation
+    ## get recent problems to recommendation
     ########################################
-    csv_name = data['datasets']['recommendation_name']
-    csv_path = data['datasets']['root']
-    csv_f = csv_path + csv_name
-    problems = rend.getProblemsByLevel()
-    pl1 = problems[0]
-    pl2 = problems[1]
-    pl3 = problems[2]
-    pl4 = problems[3]
-    pl5 = problems[4]
+    txt_save_path = data['tmp_problem_path']
     train_p_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_p_file_name']
     train_p_df = pd.DataFrame(pd.read_csv(train_p_file))
-    user = {
-        'uid': None,
-        'nick': None,
-        'factor': None,
-        'solved': None,
-        'prefer_cls': None,
-        'get_recom': None
-    }
-
-    problems_l = []
     # get recent user solved record
     for i in range(0, 8):
         tmp_df = train_p_df[train_p_df['prefer_class'].isin([i])]
@@ -119,12 +105,56 @@ def makeRecommendation():
         li = tmp_df['user'].tolist()
         print(type(li))
         problems = scrawl.getUserLatestACProblems(li)
-        problems_l.append(problems)
-
+        with open(str(i) + '_problem.txt', 'w') as f:
+            for x in range(len(problems)):
+                f.write(str(problems[x]) + ',')
+        print(txt_save_path + str(i) + '_problem.txt write successful!')
+        f.close()
     print('get ac problems finished!')
-    prop = [0.8, 0.6, 0.4, 0.2, 0.1]
+
+
+def makeRecommendation():
+    csv_name = data['datasets']['recommendation_name']
+    csv_path = data['datasets']['root']
+    train_p_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_p_file_name']
+    train_p_df = pd.DataFrame(pd.read_csv(train_p_file))
+    csv_f = csv_path + csv_name
+    problems = rend.getProblemsByLevel()
+    rec_prob = []
     user_all = []
+    pl1 = problems[0]
+    pl2 = problems[1]
+    pl3 = problems[2]
+    pl4 = problems[3]
+    pl5 = problems[4]
+    prop = [0.8, 0.6, 0.4, 0.2, 0.1]  # with probability for system recommendation.
+    rec_prob0 = _getTmp(0)
+    rec_prob1 = _getTmp(1)
+    rec_prob2 = _getTmp(2)
+    rec_prob3 = _getTmp(3)
+    rec_prob4 = _getTmp(4)
+    rec_prob5 = _getTmp(5)
+    rec_prob6 = _getTmp(6)
+    rec_prob7 = _getTmp(7)
+
+    rec_prob.append(rec_prob0)
+    rec_prob.append(rec_prob1)
+    rec_prob.append(rec_prob2)
+    rec_prob.append(rec_prob3)
+    rec_prob.append(rec_prob4)
+    rec_prob.append(rec_prob5)
+    rec_prob.append(rec_prob6)
+    rec_prob.append(rec_prob7)
+
     for i in range(len(train_p_df)):
+        user = {
+            'uid': None,
+            'nick': None,
+            'factor': None,
+            'solved': None,
+            'prefer_cls': None,
+            'get_recom': None
+        }
         sys_problem = []
         uid = train_p_df['user'][i]
         nickname = train_p_df['nickname'][i]
@@ -140,17 +170,16 @@ def makeRecommendation():
             user['get_recom'] = rend.getProblemRandom(pl1 + pl2, data['recommend_num'])
         else:
             if 30 < factor <= 60:
-                sys_problem = rend.getProblemRandom(pl2 + pl3, data['recommend_num'] * prop[0])
+                sys_problem = rend.getProblemRandom(pl2 + pl3, int(data['recommend_num'] * prop[0]))
             elif 60 < factor <= 80:
-                sys_problem = rend.getProblemRandom(pl3 + pl4, data['recommend_num'] * prop[1])
+                sys_problem = rend.getProblemRandom(pl3 + pl4, int(data['recommend_num'] * prop[1]))
             elif 80 < factor <= 100:
-                sys_problem = rend.getProblemRandom(pl4 + pl5, data['recommend_num'] * prop[2])
+                sys_problem = rend.getProblemRandom(pl4 + pl5, int(data['recommend_num'] * prop[2]))
             elif 100 < factor <= 110:
-                sys_problem = rend.getProblemRandom(pl4 + pl5, data['recommend_num'] * prop[3])
+                sys_problem = rend.getProblemRandom(pl4 + pl5, int(data['recommend_num'] * prop[3]))
             remain = data['recommend_num'] - len(sys_problem)
-            user_recom = sys_problem + rend.getProblemRandom(problems_l[prefer_class], remain)
-            user['get_recom'] = user_recom
-        print(user['uid'], factor, ' --> ', user['get_recom'])
+            user_recom = sys_problem + rend.getProblemRandom(rec_prob[prefer_class], remain)
+            user['get_recom'] = list(user_recom)
         user_all.append(user)
 
     with open(csv_f, 'w') as ff:
@@ -159,6 +188,7 @@ def makeRecommendation():
         for i in range(len(user_all)):
             w.writerow(user_all[i])
     ff.close()
+    print('finished')
 
 
 def run():
@@ -179,12 +209,25 @@ def runTime():
             up.updateDB()
 
 
+def _getTmp(e):
+    path = data['tmp_problem_path']
+    file1 = path + str(e) + '_problem.txt'
+    with open(file1, 'r') as f:
+        total = f.readline()  # only one line
+        problems_list = total.split(',')[:-1]
+    for i in range(len(problems_list)):
+        problems_list[i] = int(problems_list[i])
+    return problems_list
+
+
+def read_recommendation_df_test():
+    df = pd.DataFrame(pd.read_csv('data/recommendation.csv'))
+    l = df['get_recom'][0].lstrip('[').rstrip(']').split(', ')
+
 # pool = [
 #     threading.Thread(target=run),
 #     threading.Thread(target=runTime)
 # ]
 
-# for t in pool:
-#     t.start()
-
-makeRecommendation()
+# read_tmp_problems()
+# makeRecommendation()
