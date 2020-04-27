@@ -54,6 +54,7 @@ class DataScrawler:
         self.user_info_url = data['oj_user_info_url']
         self.csv_dir = data['datasets']['data_root']
         self.file = data['datasets']['generate_csv_root'] + data['datasets']['generate_file_name']
+        self.tmp_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_tmp_file_name']
         self.userinfo_file = data['datasets']['generate_csv_root'] + data['datasets']['generate_userinfo_name']
         login_id = data['oj_username']
         passwd = data['oj_passwd']
@@ -110,7 +111,7 @@ class DataScrawler:
                 try:
                     self.req = self.s.get(self.down_contest_url2 + str(i)).content
                 except:
-                    print('getContest info error! maybe this id ', i, ' is expired !')
+                    self.logger.warning('CALL DataScrawler -> get_contest -> getContest error! maybe this id '+ str(i) + ' is expired!')
 
             req = self.req.decode('utf-8')  # chars transfer to Chinese
             html = bs(req, 'lxml')
@@ -118,13 +119,13 @@ class DataScrawler:
                 title = html.find('center').text
                 html_data = pd.read_html(req)
             except Exception:
-                print(i, '\tdoesn\'t exist!')
+                self.logger.warning(str(i)+'\tdoesn\'t exist!')
                 continue
             for j in html_data:
                 table = pd.DataFrame(j)
                 table.to_csv(self.csv_dir + str(i) + '.csv', encoding='utf-8', index=False, header=False)
                 # must add header=False, or will append a useless line
-                print(i, '\t', title, ' saves successfully!')
+                self.logger.info(str(i) + '\t' + str(title) + ' saves successfully!')
 
     def get_train_data(self):
         """
@@ -137,12 +138,12 @@ class DataScrawler:
 
         """
         global user_status
-        df = pd.DataFrame(pd.read_csv(self.file))
+        df = pd.DataFrame(pd.read_csv(self.tmp_file))      # get new student data from generate_tmp.csv , then I nned to combine 2 generate.csv
         pbar = utl.ProgressBar(task_num=len(df))
         columns = ['user', 'Solved', 'Submit', 'AC', 'WA', 'TLE', 'OLE']
 
         # create a file to save the user's info data.
-        with open(self.userinfo_file, 'w') as f:
+        with open(self.userinfo_file, 'a') as f:       # change mode w -> a , update on 23/4/2020 , modified on run.
             dict_writer = csv.DictWriter(f, fieldnames=columns)
             dict_writer.writeheader()
         # create end
@@ -151,7 +152,8 @@ class DataScrawler:
             try:
                 req = self.s.get(self.user_info_url + str(df['user'][num]), headers=self.headers)
             except Exception:
-                print('get user info halted.. ', Exception)
+                self.logger.warning('CALL DataScrawler -> get_train_data -> get user info error.. ')
+                continue
             time.sleep(0.5)
             info = bs(req.content, 'lxml').find_all("td")
             so = su = ac = wa = tle = ole = None
@@ -186,20 +188,24 @@ class DataScrawler:
     def getUserLatestACProblems(self, ulist):
         """
         get a ac problems list by users' list `have same prefer class` .
+        !!! best : it would be better use db , ip will not be banned. !!!
         :param ulist: user's list
         :return: user's ac problems list(set) , [int]
         """
         ac_p = set()
+        pbar = utl.ProgressBar(task_num=len(ulist))
         for i in range(len(ulist)):
+            time.sleep(0.5)
+            pbar.update()
             try:
                 req = self.s.get(self.latestAC_url + str(ulist[i]), headers=self.headers)
                 t = bs(req.content, 'lxml')
                 tbody = t.find('table').find('tbody').find_all('tr')
                 for i in tbody:
-                    p = i.find_all('td')[2]
+                    p = i.find_all('td')[2].text
                     ac_p.add(int(p))
             except Exception:
-                print('get', str(ulist[i]), 'ac problems halted.. ', Exception)
+                continue
         return list(ac_p)
 
     def getLatestContestId(self):
