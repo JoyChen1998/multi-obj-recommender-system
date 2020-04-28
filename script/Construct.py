@@ -20,11 +20,12 @@ class Construct:
         self.problem_file = data['datasets']['root'] + data['datasets']['problemset_name']
         self.problem_r_file = data['datasets']['root'] + data['datasets']['problemset_ratio_name']
         self._train_df = pd.DataFrame(pd.read_csv(self.train_file))
-        self._train_f_df = pd.DataFrame(pd.read_csv(self._train_f_df))
+        self._train_f_df = pd.DataFrame(pd.read_csv(self.train_f_file))
         self._gen_df = pd.DataFrame(pd.read_csv(self.genrtate_file))
         self._usr_df = pd.DataFrame(pd.read_csv(self.userinfo_file))
         self._p_df = pd.DataFrame(pd.read_csv(self.problem_file))
-        self._p_r_df = pd.DataFrame(pd.read_csv(self._p_r_df))
+        self._p_r_df = pd.DataFrame(pd.read_csv(self.problem_r_file))
+        self.newbee = data['newbee_threshold']
         ## set logger
         self.logger = log.getLogger()
         self.logger.setLevel(log.INFO)  # Log等级总开关
@@ -73,8 +74,10 @@ class Construct:
         try:
             train_df.to_csv(self.train_f_file, index=False, columns=columns)  # save calc factors
             print('generate', self.train_f_file, 'successfully!')
+            self.logger.info('generate ' + self.train_f_file + ' successfully!')
         except Exception:
-            print('failed to factor -> csv ', Exception)
+            print('failed to factor -> csv ')
+            self.logger.warning('CALL Construct -> construct_factors -> failed to calc factor ')
 
     def construct_problem_ratio(self):
         """
@@ -98,9 +101,18 @@ class Construct:
         columns= ['num', 'id', 'name', 'level', 'ac', 'submit', 'ac_ratio']
         try:
             p_df.to_csv(self.problem_r_file, index=False, columns=columns)  # save ac ratio
-            print('generate',  self.problem_r_file, 'successfully!')
+            print('generate',  self.problem_r_file, 'succeed!')
+            self.logger.info('generate ' + self.problem_r_file + ' succeed!')
         except Exception:
-            print('failed to ac ratio -> csv', Exception)
+            print('failed to ac ratio -> csv')
+            self.logger.warning('CALL Construct -> construct_problem_ratio -> failed to calc ratio ')
+
+    def is_newBee(self, factor):
+        if factor <= self.newbee:
+            return True
+        else:
+            return False
+
 
 def getLevel_p(e, s):
     l = 1  ## init problem level
