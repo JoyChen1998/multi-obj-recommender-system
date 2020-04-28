@@ -61,7 +61,8 @@ class DataProcesser:
                 continue
             df = pd.DataFrame(d)
             for row in df.values:
-                if len(str(row[1])) != 12 or str(row[1])[0:4] < '2010' or str(row[1])[0:4] > '2019':  # filter dirty info
+                if len(str(row[1])) != 12 or str(row[1])[0:4] < '2010' or str(row[1])[
+                                                                          0:4] > '2019':  # filter dirty info
                     continue
                 flag = False
                 for i in range(len(self.dictlist)):
@@ -128,7 +129,7 @@ class DataProcesser:
         f.close()
 
     def combine2generate_csv(self):
-        columns = ['id','user','nickname','contestSolved','A','B','C','D','E','F','G','H','I','J']
+        columns = ['id', 'user', 'nickname', 'contestSolved', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
         generate_tmp_csv = pd.DataFrame(pd.read_csv(self.tmp_file))
         generate_tmp_csv.to_csv(self.file, mode='a', index=False, columns=columns, header=False)
         print('combine 2 generate.csv successfully!')

@@ -1,7 +1,7 @@
 import random as rand
 import yaml
 import pandas as pd
-import utils.util as utl
+import utils.DataScrawler as scrawl
 import os
 import logging as log
 
@@ -15,9 +15,11 @@ class render:
         # loading config
         #######################
         self.train_f_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_f_file_name']
+        self.train_p_file = data['datasets']['train']['train_csv_root'] + data['datasets']['train']['train_p_file_name']
         self.problem_file = data['datasets']['root'] + data['datasets']['problemset_name']
         self.problem_r_file = data['datasets']['root'] + data['datasets']['problemset_ratio_name']
         self._train_f_df = pd.DataFrame(pd.read_csv(self.train_f_file))
+        self._train_p_df = pd.DataFrame(pd.read_csv(self.train_p_file))
         self._p_r_df = pd.DataFrame(pd.read_csv(self.problem_r_file))
         self.contest_root = data['datasets']['data_root']
         ## set logger
@@ -32,56 +34,8 @@ class render:
         fh.setFormatter(formatter)
         self.logger.addHandler(fh)
 
-    def getUser(self, uid):
-        print('render -- getuser =>', str(uid))
-        """
-        get a user info from csv file for recommendation.
-        :param uid: user id
-        :return: user info
-        """
-        data_df = self._train_f_df
-        user = {
-            'uid': None,
-            'nickname': None,
-            'factor': None,
-            'submit': None,
-            'prefer_class': None
-        }
-        for i in range(len(data_df)):
-            if str(data_df['user'][i]) == uid:
-                user['uid'] = data_df['user'][i]
-                user['nickname'] = data_df['nickname'][i]
-                user['factor'] = data_df['factor'][i]
-                user['submit'] = data_df['submit'][i]
-                user['prefer_class'] = data_df['prefer_class'][i]
-                break
-        return user
-
-    def getProblemByFactor(self, factor):
-        print('render -- getProblemByFactor =>', str(factor))
-        """
-        return the factor equals problems to recommender-system
-        :param factor: user's factor
-        :return: problem list
-        """
-        problem_df = self._p_r_df
-        if 0 < factor < 40:
-            p_recom =1
-        elif 40 < factor < 70:
-            p_recom =3
-        elif 70 < factor < 100:
-            p_recom =5
-        else:
-            p_recom =7
-        p_list = []
-        for i in range(len(problem_df)):
-            if problem_df['level'] == p_recom:
-                p_list.append(problem_df['id'])
-        return p_list
-
     @staticmethod
     def getProblemRandom(plist, getnum):
-        print('render -- getProblemRandom')
         """
         return a recommend problem list with random sequence.
         :param plist: total number of problems we have.
@@ -91,6 +45,10 @@ class render:
         return rand.sample(plist, getnum)
 
     def getOriginContestId(self):
+        """
+        get current max oj-contest id
+        :return: current max oj-contest id <int>
+        """
         maxfilename = 0
         for root, dirs, files in os.walk(self.contest_root):
             # print(root) #当前目录路径
@@ -99,6 +57,49 @@ class render:
                 if files[i] != '.DS_Store':  # in macOS special file
                     maxfilename = max(int(files[i].rstrip('.csv')), maxfilename)
         return maxfilename
+
+    def getProblemsByLevel(self):
+        """
+        group by any level problem.
+        :return: a list of every level set of problems
+        """
+        data_df = self._p_r_df
+        problem_l1 = []
+        problem_l2 = []
+        problem_l3 = []
+        problem_l4 = []
+        problem_l5 = []
+        problem_l6 = []
+        problem_l7 = []
+        problem_l8 = []
+        problem_level = []
+        for i in range(len(data_df)):
+            if data_df['level'][i] == 1:
+                problem_l1.append(data_df['id'][i])
+            elif data_df['level'][i] == 2:
+                problem_l2.append(data_df['id'][i])
+            elif data_df['level'][i] == 3:
+                problem_l3.append(data_df['id'][i])
+            elif data_df['level'][i] == 4:
+                problem_l4.append(data_df['id'][i])
+            elif data_df['level'][i] == 5:
+                problem_l5.append(data_df['id'][i])
+            elif data_df['level'][i] == 6:
+                problem_l6.append(data_df['id'][i])
+            elif data_df['level'][i] == 7:
+                problem_l7.append(data_df['id'][i])
+            elif data_df['level'][i] == 8:
+                problem_l8.append(data_df['id'][i])
+        problem_level.append(problem_l1)
+        problem_level.append(problem_l2)
+        problem_level.append(problem_l3)
+        problem_level.append(problem_l4)
+        problem_level.append(problem_l5)
+        problem_level.append(problem_l6)
+        problem_level.append(problem_l7)
+        problem_level.append(problem_l8)
+        return problem_level
+
 
 
 
