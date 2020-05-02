@@ -1,5 +1,5 @@
 #### general settings
-name: PROJECT_BASIC_CONFIG
+name: 'recommendation.cfg'
 
 #### login OJ accounts
 oj_username: '201658501147'
@@ -19,6 +19,8 @@ datasets:
   data_root: 'data/contest_csv/'
   generate_csv_root: 'data/generate_csv/'
   generate_file_name: 'generate.csv'
+  recommendation_name: 'recommendation.csv'
+  generate_tmp_file_name: 'generate_tmp.csv'
   generate_userinfo_name: 'user_info.csv'
   problemset_name: 'problem.csv'
   problemset_ratio_name: 'problem_r.csv'
@@ -35,10 +37,20 @@ datasets:
 plot_save: true
 plot_save_path: 'data/plot_img/'
 
+#### db cfg
+db_host: 'localhost'
+db_user: 'root'
+db_pass: ''
+db_name: 'test'
+
 #### others cfg
-recommend_problem: 10
+recommend_num: 10
+newbee_threshold: 30
+
 log_path: 'log/'
 log_name: 'run.log'
 
-db_user: 'root'
-db_pass: 'null'
+tmp_problem_path: 'data/_tmp/'
+
+
+
