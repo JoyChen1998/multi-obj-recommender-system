@@ -3,6 +3,7 @@ import yaml
 import csv
 import logging as log
 import time
+import pymysql as msql
 import pandas as pd
 import model.calcModel as calcmodel
 import script.render as render
@@ -42,8 +43,17 @@ def checkDB():
     """
     check the db conn status.
     """
-    return True
-
+    host = data['db_host']
+    user = data['db_user']
+    passwd = data['db_pass']
+    dbname = data['db_name']
+    try:
+        db = msql.connect(host, user, passwd, dbname)
+        db.close()
+        return True
+    except:
+        logger.error('Can\'t connect to the database!')
+        return False
 
 def updateInfo():
     """
@@ -54,9 +64,9 @@ def updateInfo():
         create generate_csv/generate.csv
         create generate_csv/user_Info.csv
         combine generate/*.csv -> train.csv (basic train set)
-        create problem.csv                          => call scrawler   /haven't done
+        create problem.csv                          => call scrawler   *
         calculate train_factor.csv by train.csv     => call Construct
-        calculate problem_r.csv by problem.csv      => call Construct  /haven't done
+        calculate problem_r.csv by problem.csv      => call Construct  *
         update statistic images                     => call iplot
     }
     """
@@ -67,7 +77,7 @@ def updateInfo():
     scrawl.login()
     latestId = scrawl.getLatestContestId()
     originId = rend.getOriginContestId()
-    print('get new update --> origin_id =', originId, ' , the latest_id =', latestId)
+    logger.info('get new update --> origin_id =', originId, ' , the latest_id =', latestId)
     scrawl.get_contest(originId + 1, latestId)  # create contest_csv/xxxx.csv
     dprocess.preprocess_contest(originId + 1, latestId)
     dprocess.generate_tmp_csv()
@@ -101,16 +111,15 @@ def getRecent_problems():
     # get recent user solved record
     for i in range(0, 8):
         tmp_df = train_p_df[train_p_df['prefer_class'].isin([i])]
-        print('get record solved cls->', i, '\n')
         li = tmp_df['user'].tolist()
-        print(type(li))
         problems = scrawl.getUserLatestACProblems(li)
-        with open(str(i) + '_problem.txt', 'w') as f:
+        ### save get problems
+        with open(txt_save_path + str(i) + '_problem.txt', 'w') as f:
             for x in range(len(problems)):
                 f.write(str(problems[x]) + ',')
-        print(txt_save_path + str(i) + '_problem.txt write successful!')
+        logger.info(txt_save_path + str(i) + '_problem.txt write succeed!')
         f.close()
-    print('get ac problems finished!')
+    logger.info('get recent problems succeed!')
 
 
 def makeRecommendation():
@@ -188,7 +197,7 @@ def makeRecommendation():
         for i in range(len(user_all)):
             w.writerow(user_all[i])
     ff.close()
-    print('finished')
+    logger.info('make recommendation finished!')
 
 
 def run():
@@ -231,3 +240,5 @@ def read_recommendation_df_test():
 
 # read_tmp_problems()
 # makeRecommendation()
+upd = update.updateData()
+upd.updateDB()
