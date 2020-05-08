@@ -16,3 +16,6 @@ The multi-objective learning recommender system based on machine learning is bas
   3. Use k-means algorithm $$(k=10)$$ to clustering users.
   4. save result as $csv$.
 
++ How to test?
+
+  run main.py
