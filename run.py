@@ -205,6 +205,9 @@ def run():
         logger.error('can not connect to the DB, program halted!')
         exit(0)
     updateInfo()
+    makeRecommendation()
+    up = update.updateData()
+    up.updateDB()
 
 
 def runTime():
@@ -239,6 +242,4 @@ def read_recommendation_df_test():
 # ]
 
 # read_tmp_problems()
-# makeRecommendation()
-upd = update.updateData()
-upd.updateDB()
+run()
