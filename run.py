@@ -204,10 +204,10 @@ def run():
     if not checkDB():
         logger.error('can not connect to the DB, program halted!')
         exit(0)
+    runTime()
     updateInfo()
     makeRecommendation()
-    up = update.updateData()
-    up.updateDB()
+
 
 
 def runTime():
