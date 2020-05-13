@@ -37,6 +37,7 @@ dprocess = processer.DataProcesser()
 idraw = iplot.InfoPlot()
 cons = construct.Construct()
 calcmm = calcmodel.calcModel()
+up = update.updateData()
 
 
 def checkDB():
@@ -204,20 +205,16 @@ def run():
     if not checkDB():
         logger.error('can not connect to the DB, program halted!')
         exit(0)
-    runTime()
-    updateInfo()
-    makeRecommendation()
 
-
-
-def runTime():
-    up = update.updateData()
     while True:
         if not up.checkTime():
             time.sleep(5)
         else:
             # do multi-threading {}
-            up.updateUserCluster([''])
+            updateInfo()  # update info.
+            up.updateUserCluster(['2014', '2015', '2016', '2017', '2018', '2019'])
+            getRecent_problems()
+            makeRecommendation()
             up.updateDB()
 
 
@@ -236,10 +233,4 @@ def read_recommendation_df_test():
     df = pd.DataFrame(pd.read_csv('data/recommendation.csv'))
     l = df['get_recom'][0].lstrip('[').rstrip(']').split(', ')
 
-# pool = [
-#     threading.Thread(target=run),
-#     threading.Thread(target=runTime)
-# ]
-
-# read_tmp_problems()
 run()
