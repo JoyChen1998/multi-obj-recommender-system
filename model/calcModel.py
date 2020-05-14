@@ -5,6 +5,7 @@ import pandas as pd
 import utils.util as utl
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
+import logging as log
 
 basic_config_path = 'options/train/config.yml'  # use basic config
 
@@ -27,6 +28,17 @@ class calcModel:
         self._gen_df = pd.DataFrame(pd.read_csv(self.genrtate_file))
         self._usr_df = pd.DataFrame(pd.read_csv(self.userinfo_file))
         self._p_df = pd.DataFrame(pd.read_csv(self.problem_file))
+        ## set logger
+        self.logger = log.getLogger()
+        self.logger.setLevel(log.INFO)  # Log等级总开关
+        log_path = data['log_path']
+        log_name = data['log_name']
+        log_fullpath = log_path + log_name
+        fh = log.FileHandler(log_fullpath, mode='a')
+        fh.setLevel(log.DEBUG)
+        formatter = log.Formatter("%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s")
+        fh.setFormatter(formatter)
+        self.logger.addHandler(fh)
 
     def kmeans_clustering_user(self, grade):
         """
@@ -34,6 +46,7 @@ class calcModel:
         ability decides to their factors.
         :param grade: [str] list
         """
+        self.logger.info('calcModel -- kmeans_clustering_user --start')
         estimator = KMeans(n_clusters=8)
         # cluster for 5 classes. ensure user's level.
         data_df = self._train_f_df
@@ -84,7 +97,7 @@ class calcModel:
         plt.yticks(fontsize=10)
         plt.xlabel('last2prob', fontsize=12)
         plt.ylabel('last1prob', fontsize=12)
-        plt.savefig('k-means-status.jpg')
+        plt.savefig('data/plot_img/k-means-status.jpg')
         plt.show()
         ####### plot test end
 
@@ -109,13 +122,18 @@ class calcModel:
         for i in x7.values:
             data_df.loc[data_df['user'] == i[0], ['prefer_class']] = 7
         self._prefer_df = data_df
+        self.saveTo_csv()
 
     def saveTo_csv(self):
         columns = ['id', 'user', 'nickname', 'Solved', 'factor', 'prefer_class',
                    'contestSolved', 'Submit', 'AC', 'WA', 'TLE',
                    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
         self._prefer_df.to_csv(self.train_prefer_file, index=False, columns=columns)
-        print('generate train_prefer_class.csv successfully!')
+        self.logger.info('generate train_prefer_class.csv successfully!')
+
+
+
+
 
 
 
