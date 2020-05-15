@@ -211,11 +211,10 @@ def run():
             time.sleep(5)
         else:
             # do multi-threading {}
-            updateInfo()  # update info.
-            up.updateUserCluster(['2014', '2015', '2016', '2017', '2018', '2019'])
-            getRecent_problems()
-            makeRecommendation()
-            up.updateDB()
+            updateInfo()  # update info & cluster user data
+            getRecent_problems() # get user's recent problems
+            makeRecommendation() 
+            up.updateDB() # save recommendation to db
 
 
 def _getTmp(e):
