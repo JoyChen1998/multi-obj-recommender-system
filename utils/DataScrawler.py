@@ -138,7 +138,7 @@ class DataScrawler:
 
         """
         global user_status
-        df = pd.DataFrame(pd.read_csv(self.tmp_file))      # get new student data from generate_tmp.csv , then I nned to combine 2 generate.csv
+        df = pd.DataFrame(pd.read_csv(self.tmp_file))      # get new student data from generate_tmp.csv , then I need to combine 2 generate.csv
         pbar = utl.ProgressBar(task_num=len(df))
         columns = ['user', 'Solved', 'Submit', 'AC', 'WA', 'TLE', 'OLE']
 
