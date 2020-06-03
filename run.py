@@ -82,7 +82,7 @@ def updateInfo():
     scrawl.get_contest(originId + 1, latestId)  # create contest_csv/xxxx.csv
     dprocess.preprocess_contest(originId + 1, latestId)
     dprocess.generate_tmp_csv()
-    scrawl.get_train_data()  # get user basic train data from generate_tmp.csv,
+    scrawl.get_train_data()  # get user basic train data from generate_tmp.csv.
     dprocess.combine2generate_csv()  # then combine 2 generate.csv
     dprocess.merge_2dfNgenerate_train_data()  # need to change a merge function
 
@@ -211,10 +211,20 @@ def run():
             time.sleep(5)
         else:
             # do multi-threading {}
-            updateInfo()  # update info & cluster user data
-            getRecent_problems() # get user's recent problems
-            makeRecommendation() 
-            up.updateDB() # save recommendation to db
+            updateInfo()  # update info.
+            getRecent_problems()
+            makeRecommendation()
+            up.updateDB()
+
+
+def run_test():
+    # if not checkDB():
+    #     logger.error('can not connect to the DB, program halted!')
+    #     exit(0)
+    updateInfo()  # update info.
+    getRecent_problems()
+    makeRecommendation()
+    up.updateDB()
 
 
 def _getTmp(e):
@@ -228,8 +238,5 @@ def _getTmp(e):
     return problems_list
 
 
-def read_recommendation_df_test():
-    df = pd.DataFrame(pd.read_csv('data/recommendation.csv'))
-    l = df['get_recom'][0].lstrip('[').rstrip(']').split(', ')
-
-run()
+# run()
+run_test()
