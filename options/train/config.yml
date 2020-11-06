@@ -2,8 +2,8 @@
 name: 'recommendation.cfg'
 
 #### login OJ accounts
-oj_username: '201658501147'
-oj_passwd : '123456'
+oj_username: 'your ytu OJ account'
+oj_passwd : 'your password for ytu OJ account'
 
 #### urls
 oj_login_url: 'http://202.194.119.110/login.php'

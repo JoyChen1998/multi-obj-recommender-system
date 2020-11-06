@@ -4,7 +4,7 @@
 
 ## 环境安装
 
-+ 本地运行和测试使用`python 3.5+`版本，建议使用`Anaconda`作为该毕业设计的python解释器.
++ 本地运行和测试使用`python 3.5+`版本.
 
 + 需要提前安装的库有：`csv`, `yaml`, `logging`, `pandas`, `numpy`, `request`, `BeautifulSoup(bs4)`, `matplotlib`, `seaborn`(<strong>需要提升版本</strong>), `pymysql`.
 
